@@ -1,6 +1,6 @@
 from ariadne import ObjectType, QueryType, MutationType, graphql_sync, make_executable_schema
 from ariadne.constants import PLAYGROUND_HTML
-from flask import Flask, escape, request, jsonify
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -36,8 +36,6 @@ type_defs = """
 
 query = QueryType()
 mutation = MutationType()
-# students = ObjectType("Student")
-# classes = ObjectType("Class")
 
 @app.route("/graphql", methods=["GET"])
 def graphql_playgroud():
@@ -76,7 +74,7 @@ def resolve_classes(*_, id):
         return CLASS_MAP[id]
 
 @mutation.field("addStudent")
-def resolve_addStudent(_, info, name):
+def resolve_addStudent(*_, name):
     global STUDENT_ID
 
     studentID = STUDENT_ID
@@ -89,7 +87,7 @@ def resolve_addStudent(_, info, name):
     return STUDENT_MAP[studentID]
 
 @mutation.field("addClass")
-def resolve_addClass(_, info, name):
+def resolve_addClass(*_, name):
     global CLASS_ID
 
     classID = CLASS_ID
@@ -103,13 +101,12 @@ def resolve_addClass(_, info, name):
     return CLASS_MAP[classID]
 
 @mutation.field("addStudentIntoClass")
-def addStudentIntoClass(_, info, classID, studentID):
+def addStudentIntoClass(*_, classID, studentID):
 
-    if classID in CLASS_MAP:
-        if studentID in STUDENT_MAP:
+    if classID in CLASS_MAP and studentID in STUDENT_MAP:
 
-            # add student into student list (duplicate allowed)
-            CLASS_MAP[classID]['students'].append(STUDENT_MAP[studentID])
-            return CLASS_MAP[classID]
+        # add student into student list (duplicate allowed)
+        CLASS_MAP[classID]['students'].append(STUDENT_MAP[studentID])
+        return CLASS_MAP[classID]
 
 schema = make_executable_schema(type_defs, [query, mutation])
